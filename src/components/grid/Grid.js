@@ -2,7 +2,7 @@ import React from 'react';
 import * as lodash from 'lodash';
 import PropTypes from 'prop-types';
 import { directionKeys } from 'mw/config/consts';
-import { Cell, CoordCell } from './cell';
+import Cell from './Cell';
 import './style.scss';
 
 export default class extends React.Component {
@@ -18,12 +18,11 @@ export default class extends React.Component {
     super(props);
     lodash.bindAll(this, [
       'populateCells',
-      'getCellsOfWord',
       'getWordsOfCell',
       'getInvalidCells',
       'isCellInWord',
       'generateGrid',
-      'generateRow',
+      'generateEmptyRow',
       'getRows',
       'moveWord',
       'validate',
@@ -54,18 +53,18 @@ export default class extends React.Component {
 
   generateGrid(props = this.props) {
     const { height } = props;
-    const rows = lodash.range(height).map(this.generateRow);
+    const rows = lodash.range(height).map(this.generateEmptyRow);
     const cells = lodash.concat(...rows);
     this.populateCells(cells, props);
     return cells;
   }
 
-  generateRow(rowIndex) {
+  generateEmptyRow(rowIndex) {
     const { width } = this.props;
-    return lodash.range(width).map(index => this.generateCell(index, rowIndex));
+    return lodash.range(width).map(index => this.generateEmptyCell(index, rowIndex));
   }
 
-  generateCell(x, y) {
+  generateEmptyCell(x, y) {
     return {
       id: `${x}-${y}`,
       x,
@@ -76,34 +75,35 @@ export default class extends React.Component {
 
   populateCells(cells, props = this.props) {
     const { words } = props;
-    const splitWords = lodash.groupBy(words, 'direction');
-    lodash.forEach(splitWords, value => {
-      value.forEach(this.populateCellsOfWord.bind(this, cells));
+    const wordsByDirection = lodash.groupBy(words, 'direction');
+    lodash.forEach(wordsByDirection, sameDirectionWords => {
+      sameDirectionWords.forEach(this.populateCellsOfWord.bind(this, cells));
     });
   }
 
   getInvalidCells() {
     const { words } = this.props;
+    const { cells: allCells } = this.state;
 
     const aggregatedCells = words.map(word => {
-      const cells = this.getCellsOfWord(word);
+      const cells = this.getCellsOfWord(word, allCells);
       return { word, cells };
     });
 
     return lodash.reduce(aggregatedCells, (result, { word, cells }) => {
-      const invalidCells = lodash.filter(cells, (cell, index) => {
-        return cell.letter !== word.answer[index];
-      });
+      const invalidCells = lodash.filter(cells, (cell, index) => cell.letter !== word.answer[index]);
       return [ ...result, ...invalidCells ];
     }, []);
   }
 
-  getCellsOfWord(word, cells = this.state.cells) {
-    return lodash.map(word.answer, (letter, letterIndex) => {
-      const { start, direction } = word;
+  getCellsOfWord(word, cells) {
+    const { start, direction, answer } = word;
+    return lodash.map(answer, (letter, letterIndex) => {
+      const shiftX = direction === 'h' ? letterIndex : 0;
+      const shiftY = direction === 'v' ? letterIndex : 0;
       const coordsToMatch = {
-        x: direction === 'h' ? start.x + letterIndex : start.x,
-        y: direction === 'v' ? start.y + letterIndex : start.y,
+        x: start.x + shiftX,
+        y: start.y + shiftY
       };
       return lodash.find(cells, coordsToMatch);
     });
@@ -111,57 +111,52 @@ export default class extends React.Component {
 
   getWordsOfCell(cell) {
     const { words } = this.props;
-    return words.filter(word => {
-      return this.isCellInWord(cell, word);
-    });
+    return words.filter(word => this.isCellInWord(cell, word));
   }
 
   isCellInWord(cell, word) {
-    const cellsForWord = this.getCellsOfWord(word);
+    const { cells } = this.state;
+    const cellsForWord = this.getCellsOfWord(word, cells);
     return lodash.some(cellsForWord, { id: cell.id });
   }
 
   populateCellsOfWord(cells, word, wordIndex) {
+    const { answer } = word;
     const cellsForWord = this.getCellsOfWord(word, cells);
 
     // TODO: prevent such situations
-    if (word.answer.length > lodash.compact(cellsForWord).length) {
-      throw new Error(`Grid.populateCellsOfWord: word ${word.answer} is beyond Grid's boundaries`);
+    const isWordOutsideOfGrid = answer.length > lodash.compact(cellsForWord).length;
+    if (isWordOutsideOfGrid) {
+      throw new Error(`Grid.populateCellsOfWord: word ${answer} is beyond Grid's boundaries`);
     }
 
     cellsForWord.forEach((cell, index) => {
-      cell.letter = word.answer[index];
-      if (index === 0) {
-        cell.wordNumber = wordIndex + 1;
-      }
+      cell.letter = answer[index];
     });
+    cellsForWord[0].wordNumber = wordIndex + 1;
   }
 
+  // TODO: Consider support for more than two containing works (now selection just switches between two of them)
   selectWord(cell) {
-    let selectedWord;
+    let selectedWord = null;
+    // TODO: Not sure that having a letter is correct criteria
     if (cell.letter) {
       const { selectedWord: currentlySelectedWord } = this.state;
       const containingWords = this.getWordsOfCell(cell);
-      selectedWord = lodash.find(containingWords, word => {
-        // If clicked cell is contained in only one word, simply select it
-        // If there is several words, let's return one which is not currently selected
-        return containingWords.length === 1 ? true : word !== currentlySelectedWord;
-      });
-    } else {
-      selectedWord = null;
+      // Next string implicitly covers the case when there is only one word containing given cell
+      selectedWord = containingWords.find(word => word !== currentlySelectedWord);
     }
 
     this.setState({ selectedWord });
   }
 
-  moveWord(event) {
+  moveWord({ key }) {
     const { selectedWord } = this.state;
     if (!selectedWord) {
       return null;
     }
-    const { key } = event;
     const allowedKeys = Object.keys(directionKeys);
-    const isKeySupported = allowedKeys.indexOf(key) !== -1;
+    const isKeySupported = lodash.includes(allowedKeys, key);
     if(isKeySupported) {
       this.props.onMoveWord(selectedWord, directionKeys[key])
     }
@@ -185,8 +180,7 @@ export default class extends React.Component {
       ...cell,
       onSelect: this.selectWord
     };
-    const CellComponent = cell.isCoord ? CoordCell : Cell;
-    return <CellComponent {...props} />;
+    return <Cell {...props} />;
   }
 
   renderRow(row, key) {
