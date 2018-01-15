@@ -1,1 +1,2 @@
-# mossworc-react
+# mossword-react
+Crossword constructor
