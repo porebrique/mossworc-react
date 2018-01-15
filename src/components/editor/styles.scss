@@ -1,0 +1,38 @@
+.mw-editor {
+  text-align: center;
+
+  .mw-editor-sections  {
+    float: left;
+    widtH: 100%;
+    clear: both;
+    margin: 20px 0 40px 0;
+
+    .mw-editor-section  {
+      float: left;
+    }
+
+    .mw-editor-words {
+      width: 30%;
+    }
+
+    .mw-editor-grid {
+      width: 70%;
+    }
+
+  }
+
+  .editor-actions {
+    clear: both;
+    margin: 20px 0;
+    text-align: left;
+  }
+
+
+
+
+}
+
+
+.mw-crossword-config-field {
+  bordeR: 1px solid silver;
+}
