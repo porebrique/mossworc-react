@@ -16,14 +16,14 @@
       display: inline-block;
       bordeR: 1px solid #2b2b2b;
 
-      &.is-invalid {
-        background: rgba(191, 14, 0, 0.9);
-      }
       &.is-selected:not(.is-invalid) {
         background: rgba(255, 216, 0, 0.2);
       }
       &.is-empty {
         background: #2b2b2b
+      }
+      &.is-invalid {
+        background: rgba(191, 14, 0, 0.9);
       }
 
       &:not(.is-empty):not(.mw-grid-cell-coord) {
@@ -34,12 +34,6 @@
           cursor: pointer;
         }
       }
-
-      &.mw-grid-cell-coord {
-        bordeR: 0;
-        opacity: 0.3;
-      }
-
       .cell-word-number {
         position: absolute;
         top: 2px;
