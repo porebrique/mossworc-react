@@ -5,6 +5,11 @@
     margin: 10px 0;
   }
 
+  .is-selected > div {
+    border-radius: 5px;
+    background: rgba(255, 216, 0, 0.2);
+  }
+
   .section-title {
     font-weight: bold;
     margin-bottom: 10px;

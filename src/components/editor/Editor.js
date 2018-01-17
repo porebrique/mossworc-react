@@ -29,11 +29,13 @@ export default class extends Component {
       'deleteWord',
       'saveWord',
       'moveWord',
+      'selectWord',
       'toggleExportDialog',
       'renderExportDialog'
     ]);
 
     this.state = {
+      selectedWord: null,
       isExportDialogVisible: false,
       words: [ ...props.words ]
     }
@@ -113,6 +115,10 @@ export default class extends Component {
     this.setState({ isExportDialogVisible })
   }
 
+  selectWord(selectedWord) {
+    this.setState({ selectedWord });
+  }
+
   renderExportDialog() {
     const { isExportDialogVisible, words } = this.state;
     if (!isExportDialogVisible) {
@@ -126,11 +132,12 @@ export default class extends Component {
   }
 
   render() {
-    const { words } = this.state;
+    const { words, selectedWord } = this.state;
     const { width, height } = this.props;
 
     const questionsProps = {
       words,
+      selectedWord,
       onDeleteWord: this.deleteWord,
       onSaveWord: this.saveWord
     };
@@ -139,6 +146,8 @@ export default class extends Component {
       words,
       width,
       height,
+      selectedWord,
+      onSelectWord: this.selectWord,
       onMoveWord: this.moveWord
     };
 
