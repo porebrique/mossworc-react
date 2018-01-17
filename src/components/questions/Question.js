@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import  * as lodash from 'lodash';
+import classNames from 'classnames';
 import { ListItem, IconMenu, MenuItem, IconButton } from 'material-ui';
 import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 
@@ -10,6 +11,7 @@ export default class extends Component {
 
   static propTypes = {
     number: PropTypes.number.isRequired,
+    isSelected: PropTypes.bool.isRequired,
     word: PropTypes.shape({
       question: PropTypes.string.isRequired,
       answer: PropTypes.string.isRequired
@@ -59,14 +61,16 @@ export default class extends Component {
   }
 
   render() {
-    const { number, word } = this.props;
+    const { number, word, isSelected } = this.props;
     const { question, answer } = word;
 
     const rightIconMenu = this.getActionsMenu();
+    const className = classNames({ 'is-selected': isSelected });
     const props = {
       primaryText: `${number}. ${question}`,
       secondaryText: `(${answer})`,
       rightIconButton: rightIconMenu,
+      className,
       onClick: this.onWordClick
     };
     return <ListItem {...props} />;

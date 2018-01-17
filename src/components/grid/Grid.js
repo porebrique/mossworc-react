@@ -12,6 +12,8 @@ export default class extends React.Component {
     words: PropTypes.arrayOf(PropTypes.object).isRequired,
     height: PropTypes.number,
     width: PropTypes.number,
+    selectedWord: PropTypes.object,
+    onSelectWord: PropTypes.func.isRequired,
     onMoveWord: PropTypes.func.isRequired
   };
 
@@ -25,11 +27,11 @@ export default class extends React.Component {
       'renderCell',
       'renderRow'
     ]);
-    this.state = {
-      // TODO: consider passing this word to parent component instead of storing here
-      // (could be useful for highlighting a question in a list)
-      selectedWord: null
-    };
+  }
+
+  isCellInSelectedWord(cell) {
+    const { selectedWord } = this.props;
+    return lodash.includes(cell.words, selectedWord);
   }
 
   createGrid() {
@@ -79,13 +81,13 @@ export default class extends React.Component {
   }
 
   selectWord(cell) {
-    const { selectedWord: currentlySelectedWord } = this.state;
+    const { selectedWord: currentlySelectedWord } = this.props;
     const selectedWord = cell.words.find(word => word !== currentlySelectedWord) || null;
-    this.setState({ selectedWord });
+    this.props.onSelectWord(selectedWord);
   }
 
   moveWord({ key }) {
-    const { selectedWord } = this.state;
+    const { selectedWord } = this.props;
     const isMovingAllowed = selectedWord && gridUtils.isKeySupported(key);
     if (isMovingAllowed) {
       this.props.onMoveWord(selectedWord, directionKeys[key])
@@ -93,9 +95,8 @@ export default class extends React.Component {
   }
 
   renderCell(cell, key) {
-    const { selectedWord } = this.state;
     const { isValid } = cell;
-    const isSelected = lodash.includes(cell.words, selectedWord);
+    const isSelected = this.isCellInSelectedWord(cell);
     const props = {
       key,
       isInvalid: !isValid,

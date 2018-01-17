@@ -10,6 +10,7 @@ import "./styles.scss";
 export default class extends Component {
 
   static propTypes = {
+    selectedWord: PropTypes.object,
     words: PropTypes.arrayOf(PropTypes.object).isRequired,
     onDeleteWord: PropTypes.func.isRequired,
     onSaveWord: PropTypes.func.isRequired
@@ -57,11 +58,15 @@ export default class extends Component {
   }
 
   renderWord(word, key) {
+    const { selectedWord, onDeleteWord } = this.props;
+    const isSelected = selectedWord === word;
+
     const props = {
       key,
       number: key + 1,
       word,
-      onDelete: this.props.onDeleteWord,
+      isSelected,
+      onDelete: onDeleteWord,
       onEdit: this.editWord
     };
     return <Question {...props} />;
