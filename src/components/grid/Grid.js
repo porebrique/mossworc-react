@@ -51,6 +51,7 @@ export default class extends React.Component {
       id: `${x}-${y}`,
       x,
       y,
+      isBlank: !words.length,
       words
     };
     const isValid = gridUtils.isCellValid(cell);

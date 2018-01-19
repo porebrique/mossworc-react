@@ -39,9 +39,9 @@ export default class extends Component {
   };
 
   getPlayableWordConfig(word) {
-    const newWord = lodash.omit(word, ['answer']);
     return {
-      ...newWord,
+      ...word,
+      answer: '',
       length: word.answer.length
     };
   }

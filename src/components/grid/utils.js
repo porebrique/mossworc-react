@@ -7,7 +7,8 @@ import { directionKeys } from 'mw/config/consts';
  * @returns {Array}
  */
 const getWordCoords = word => {
-  return lodash.range(word.answer.length).map(index => {
+  const length = word.length || word.answer.length;
+  return lodash.range(length).map(index => {
     const { start, direction } = word;
     const shiftX = direction === 'h' ? index : 0;
     const shiftY = direction === 'v' ? index : 0;
