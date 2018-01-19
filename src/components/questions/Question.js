@@ -16,13 +16,19 @@ export default class extends Component {
       question: PropTypes.string.isRequired,
       answer: PropTypes.string.isRequired
     }).isRequired,
-    onDelete: PropTypes.func.isRequired,
-    onEdit: PropTypes.func.isRequired
+    onDelete: PropTypes.func,
+    onEdit: PropTypes.func
+  };
+
+  static defaultProps = {
+    onDelete: null,
+    onEdit: null
   };
 
   constructor(props) {
     super(props);
     lodash.bindAll(this, [
+      'isEditable',
       'onEdit',
       'onDelete'
     ]);
@@ -41,7 +47,14 @@ export default class extends Component {
     onDelete(word);
   }
 
+  isEditable() {
+    const { onDelete, onEdit } = this.props;
+    return !!(onDelete && onEdit);
+  }
   getActionsMenu() {
+    if (!this.isEditable()) {
+      return null;
+    }
     const menuTrigger = (
       <IconButton
         touch={true}

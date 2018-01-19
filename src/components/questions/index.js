@@ -1,3 +1,8 @@
-import Questions from './Questions';
+import QuestionsList from './QuestionsList';
+import QuestionsListEditable from './QuestionsListEditable';
 
-export default Questions;
+export {
+  QuestionsList,
+  QuestionsListEditable
+};
+

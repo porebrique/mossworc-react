@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import * as lodash from 'lodash';
 import { RaisedButton } from 'material-ui';
 import { directions } from 'mw/config/consts';
-import { Grid, Questions } from 'mw/components';
+import { Grid, QuestionsListEditable } from 'mw/components';
 import { isMovingAllowed } from './helpers';
 import { ExportDialog } from './dialogs';
 
@@ -161,7 +161,7 @@ export default class extends Component {
       <div className="mw-editor">
         <div className="mw-editor-sections">
           <div className="mw-editor-section mw-editor-words">
-            <Questions {...questionsProps} />
+            <QuestionsListEditable {...questionsProps} />
           </div>
           <div className="mw-editor-section  mw-editor-grid">
             <Grid  {...gridProps} />
