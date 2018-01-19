@@ -1,7 +1,13 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import  * as lodash from 'lodash';
-import { Dialog, FlatButton, TextField } from 'material-ui';
+import {
+  Dialog,
+  FlatButton,
+  TextField,
+  RadioButton,
+  RadioButtonGroup
+} from 'material-ui';
 
 export default class extends Component {
 
@@ -13,14 +19,54 @@ export default class extends Component {
   constructor(props) {
     super(props);
     lodash.bindAll(this, [
+      'toggleMode',
       'getSerializedConfig'
     ]);
+    this.state = {
+      mode: this.constructor.modes.play
+    };
+  }
 
+  static modes = {
+    edit: 'edit',
+    play: 'play'
+  };
+
+  static hints = {
+    common: 'This is crossword\'s configuration, you can copy-paste it somewhere.',
+    edit: 'This one is for further edit, it contains readable answers too',
+    play: 'This is a version for playing, it doesn\'t contain readable answers'
+  };
+
+  getPlayableWordConfig(word) {
+    const newWord = lodash.omit(word, ['answer']);
+    return {
+      ...newWord,
+      length: word.answer.length
+    };
+  }
+
+  toggleMode(event, mode) {
+    this.setState({ mode });
   }
 
   getSerializedConfig() {
     const { words } = this.props;
-    return JSON.stringify(words);
+    const { modes } = this.constructor;
+    const { mode } = this.state;
+    const config = mode === modes.edit ? words : words.map(this.getPlayableWordConfig);
+    return JSON.stringify(config);
+  }
+
+  getHint() {
+    const { hints } = this.constructor;
+    const { mode } = this.state;
+    return (
+      <div>
+        <div>{hints.common}</div>
+        <div>{hints[mode]}</div>
+      </div>
+    );
   }
 
   renderButton(type) {
@@ -57,7 +103,38 @@ export default class extends Component {
     );
   }
 
+  renderModeSwitch() {
+    const { mode } = this.state;
+    const { modes } = this.constructor;
+
+    const groupProps = {
+      onChange: this.toggleMode,
+      valueSelected: mode,
+      name: 'mode-switch'
+    };
+
+    const playProps = {
+      className: 'inline',
+      value: modes.play,
+      label: 'For play'
+    };
+
+    const editProps = {
+      className: 'inline',
+      value: modes.edit,
+      label: 'For edit'
+    };
+
+    return (
+      <RadioButtonGroup {...groupProps}>
+        <RadioButton {...playProps} />
+        <RadioButton {...editProps} />
+      </RadioButtonGroup>
+    );
+  }
+
   render() {
+
     const actions = [
       this.renderButton('close')
     ];
@@ -71,11 +148,18 @@ export default class extends Component {
     };
 
     const form = this.renderForm();
+    const modeSwitch = this.renderModeSwitch();
+    const hint = this.getHint();
 
     return (
       <Dialog {...props}>
         <div className="mw-export-dialog">
-          <div>This is crossword's configuration. Select and copy-paste it somewhere.</div>
+          <div className="mode-switch">
+            {modeSwitch}
+          </div>
+          <div className="hint">
+            {hint}
+          </div>
           {form}
         </div>
       </Dialog>
